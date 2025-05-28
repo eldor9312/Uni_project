@@ -1,92 +1,70 @@
-﻿# Uni_project
-# ESP32 Door Sensor with MQTT and Telegram Bot
+# 🚪 ESP32 Door Status Notifier with MQTT and Telegram
 
-This project allows you to monitor door status using an ESP32 with a reed switch. It connects to Wi-Fi, sends updates via MQTT, and notifies you through Telegram.
-
----
-
-## ✅ What You Need
-
-**Hardware:**
-- ESP32 board (e.g., DOIT ESP32 DEVKIT V1)
-- Magnetic reed switch (door sensor)
-- 10kΩ resistor (pull-up)
-- Jumper wires
-- Breadboard (optional)
-
-**Software:**
-- PlatformIO (for ESP32 firmware)
-- MQTT broker (e.g., hosted or locally via MQTTX)
-- Telegram bot
-- Google Cloud VM (or any Python-supporting server)
+This project uses an ESP32 connected to a magnetic reed switch to detect whether a door is open or closed. It sends the status to an MQTT broker, and a Python bot running on a server listens for changes and forwards updates to a Telegram chat.
 
 ---
 
-## 📦 MQTT Setup
+## 🧰 What You Need
 
-- Broker: `34.154.152.150`  
-- Port: `1883`  
-- Topic: `door/status`  
-- Username: `eldor`  
-- Password: `12345`
-
-Use MQTTX to verify messages are received under the `door/status` topic.
+- ESP32 development board
+- Reed (СМК) magnetic switch
+- 10kΩ resistor
+- Breadboard + jumper wires
+- MQTT broker (e.g. Mosquitto on VM, or MQTTX GUI broker)
+- Wi-Fi connection
+- Google Cloud VM or any server with Python
+- Telegram Bot Token
+- Your Telegram chat ID
 
 ---
 
-🤖 Telegram Bot (Python)
-Requirements:
+## 🛠 1. Wiring the ESP32
+
+- Reed switch:
+  - One contact → GPIO 4 (D4) on ESP32
+  - One contact → GND
+- 10kΩ pull-up resistor between GPIO 4 and 3.3V
+
+---
+
+## 🔌 2. Flash the ESP32
+
+1. Open VS Code with PlatformIO
+2. Load the ESP32 sketch that connects to Wi-Fi, reads the reed switch, and publishes `"Дверь ЗАКРЫТА"` or `"Дверь ОТКРЫТА"` to the topic `door/status`
+3. Add your Wi-Fi and MQTT credentials to the code
+4. Flash to ESP32 and monitor serial output to confirm it connects and publishes
+
+---
+
+## 🛰 3. Set Up MQTT Broker
+
+You can use:
+- MQTTX GUI broker, OR
+- Mosquitto on Google Cloud VM (port 1883 open)
+
+Ensure:
+- Broker is running and reachable from ESP32 IP
+- You have the username, password, and IP (use public IP if hosted)
+
+---
+
+## 💬 4. Telegram Bot
+
+1. In Telegram, talk to [@BotFather](https://t.me/BotFather)
+2. Create a bot → save the token
+3. Send a message to your bot so it knows you
+4. Use a script or bot like [@userinfobot](https://t.me/userinfobot) to get your Telegram chat ID
+
+---
+
+## 🧠 5. Python Listener Script (on VM or PC)
+
+1. Make sure Python 3.11 is installed
+2. Install requirements:
+
+```bash
 sudo apt update
-sudo apt install python3-venv -y
+sudo apt install python3.11-venv python3-pip -y
 python3 -m venv venv
 source venv/bin/activate
 pip install paho-mqtt python-telegram-bot
-
-
-📲 How To Get CHAT_ID for Telegram
-Open Telegram and message your bot.
-
-Visit:
-
-bash
-Копировать
-Редактировать
-https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates
-Look for "chat":{"id":XXXXXXXX} — that’s your chat ID.
-
-🔍 Testing
-Move the magnet toward and away from the reed switch.
-
-Watch MQTTX for messages on door/status.
-
-Confirm notifications arrive in your Telegram.
-
-☁️ Deploy Telegram Bot on Google Cloud
-Create a VM with Ubuntu.
-
-SSH into it.
-
-Clone your repo and run:
-
-bash
-Копировать
-Редактировать
-sudo apt update
-sudo apt install python3-venv -y
-cd mqtt-telegram/
-python3 -m venv venv
-source venv/bin/activate
-pip install paho-mqtt python-telegram-bot
-python main.py
-To keep it running continuously:
-
-bash
-Копировать
-Редактировать
-nohup python main.py &
-🔒 Security Tips
-Do not hard-code tokens in public repos.
-
-Limit access to MQTT broker by IP or use TLS.
-
-Rotate your bot token if leaked.
