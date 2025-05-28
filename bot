@@ -1,0 +1,28 @@
+import paho.mqtt.client as mqtt
+import requests
+
+MQTT_BROKER = "34.154.152.150"
+MQTT_PORT = 1883
+MQTT_TOPIC = "door/status"
+
+TELEGRAM_TOKEN = ""
+CHAT_ID = ""
+
+def send_telegram_message(msg):
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    requests.post(url, data={"chat_id": CHAT_ID, "text": msg})
+
+def on_connect(client, userdata, flags, rc):
+    print("Connected to MQTT")
+    client.subscribe(MQTT_TOPIC)
+
+def on_message(client, userdata, msg):
+    print(f"Received: {msg.payload.decode()}")
+    send_telegram_message(f"Статус двери: {msg.payload.decode()}")
+
+client = mqtt.Client()
+client.on_connect = on_connect
+client.on_message = on_message
+
+client.connect(MQTT_BROKER, MQTT_PORT)
+client.loop_forever()
